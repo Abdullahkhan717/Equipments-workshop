@@ -83,7 +83,7 @@ const AppContent: React.FC = () => {
           }
         } else {
           lastBackPressRef.current = now;
-          window.alert("Press again to exit");
+          window.alert("Do you want to exit the app?");
           setShowToast(true);
         }
       } else if (event.state && event.state.view) {
