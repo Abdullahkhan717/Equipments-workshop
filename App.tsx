@@ -72,6 +72,7 @@ const AppContent: React.FC = () => {
 
     const handlePopState = (event: PopStateEvent) => {
       if (activeViewRef.current === 'dashboard') {
+        window.history.pushState({ view: 'dashboard' }, '');
         const now = Date.now();
         if (now - lastBackPressRef.current < 2000) {
           // Exit
@@ -82,8 +83,8 @@ const AppContent: React.FC = () => {
           }
         } else {
           lastBackPressRef.current = now;
+          window.alert("Press again to exit");
           setShowToast(true);
-          window.history.pushState({ view: 'dashboard' }, '');
         }
       } else if (event.state && event.state.view) {
         setActiveView(event.state.view);
@@ -710,8 +711,10 @@ const AppContent: React.FC = () => {
       )}
 
       {showToast && (
-        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg z-50 text-sm">
-          {t('pressAgainToExit')}
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div className="bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-lg font-bold">
+            {t('pressAgainToExit')}
+          </div>
         </div>
       )}
     </div>
