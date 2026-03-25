@@ -82,7 +82,7 @@ const AppContent: React.FC = () => {
           }
         } else {
           lastBackPressRef.current = now;
-          alert("App band karne ke liye ek baar phir back dabayen");
+          setShowToast(true);
           window.history.pushState({ view: 'dashboard' }, '');
         }
       } else if (event.state && event.state.view) {
