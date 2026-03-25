@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Routes, Route, useNavigate, useLocation, useBlocker } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { EquipmentList } from './components/FleetList';
 import { RepairRequestView } from './components/RepairRequestView';
@@ -28,81 +29,57 @@ import { TransferList } from './components/TransferList';
 import { TransferHistory } from './components/TransferHistory';
 import { getAllData, createRecord, updateRecord, deleteRecord } from './services/googleSheetService';
 
-type View = 'dashboard' | 'fleet' | 'request' | 'history' | 'pending' | 'workshops' | 'completed' | 'admin' | 'oilLog' | 'locations' | 'transfers' | 'outsourcedLog';
-
 const AppContent: React.FC = () => {
-  const [activeView, setActiveView] = useState<View>('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const [lastJobCardNumber, setLastJobCardNumber] = useState<number>(262000);
-
+  const [activeView, setActiveView] = useState<string>('dashboard');
+  const [lastJobCardNumber, setLastJobCardNumber] = useState(0);
   const [searchEquipmentQuery, setSearchEquipmentQuery] = useState('');
-  const [initialLocationFilter, setInitialLocationFilter] = useState('');
-  const [activeHistoryTab, setActiveHistoryTab] = useState<'details' | 'repair' | 'oil'>('details');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-  const [foundRequest, setFoundRequest] = useState<RepairRequest | null>(null);
   const [equipmentToDelete, setEquipmentToDelete] = useState<Equipment | null>(null);
-  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
-  const [transferEquipment, setTransferEquipment] = useState<Equipment | null>(null);
   const [historyTab, setHistoryTab] = useState<'repair' | 'transfer' | 'oil'>('repair');
-  const [selectedHistoryEquipmentId, setSelectedHistoryEquipmentId] = useState('');
   const [searchHistoryEquipmentQuery, setSearchHistoryEquipmentQuery] = useState('');
   const [isHistorySearchFocused, setIsHistorySearchFocused] = useState(false);
-
-  const [lastBackPress, setLastBackPress] = useState(0);
+  const [selectedHistoryEquipmentId, setSelectedHistoryEquipmentId] = useState('');
+  const [initialLocationFilter, setInitialLocationFilter] = useState('');
+  const [transferEquipment, setTransferEquipment] = useState<Equipment | null>(null);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [foundRequest, setFoundRequest] = useState<RepairRequest | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const activeViewRef = useRef(activeView);
-  const lastBackPressRef = useRef(0);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      (currentLocation.pathname === '/' || currentLocation.pathname === '/dashboard') &&
+      nextLocation.pathname !== currentLocation.pathname
+  );
 
   useEffect(() => {
-    activeViewRef.current = activeView;
-  }, [activeView]);
-
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => setShowToast(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
-
-  useEffect(() => {
-    // Set initial state
-    window.history.replaceState({ view: 'dashboard' }, '');
-
-    const handlePopState = (event: PopStateEvent) => {
-      if (activeViewRef.current === 'dashboard') {
-        window.history.pushState({ view: 'dashboard' }, '');
-        const now = Date.now();
-        if (now - lastBackPressRef.current < 2000) {
-          // Exit
-          if ((window as any).navigator && (window as any).navigator.app) {
-            (window as any).navigator.app.exitApp();
-          } else {
-            window.close();
-          }
+    if (blocker.state === 'blocked') {
+      const confirmExit = window.confirm("Do you want to exit the app?");
+      if (confirmExit) {
+        if ((window as any).navigator && (window as any).navigator.app) {
+          (window as any).navigator.app.exitApp();
         } else {
-          lastBackPressRef.current = now;
-          window.alert("Do you want to exit the app?");
-          setShowToast(true);
+          window.close();
         }
-      } else if (event.state && event.state.view) {
-        setActiveView(event.state.view);
       } else {
-        setActiveView('dashboard');
+        blocker.reset();
       }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+    }
+  }, [blocker]);
 
   useEffect(() => {
-    // Only push if it's a new view
-    if (window.history.state?.view !== activeView) {
-      window.history.pushState({ view: activeView }, '');
+    // Sync activeView with location
+    const path = location.pathname.substring(1) || 'dashboard';
+    setActiveView(path);
+
+    // Ensure dashboard is in history stack
+    if ((location.pathname === '/' || location.pathname === '/dashboard') && window.location.pathname !== '/dashboard') {
+      window.history.pushState(null, '', '/dashboard');
     }
-  }, [activeView]);
+  }, [location]);
 
 
   const { language } = useLanguage();
@@ -655,7 +632,7 @@ const AppContent: React.FC = () => {
           if (view !== 'fleet') {
             setInitialLocationFilter('');
           }
-          setActiveView(view);
+          navigate('/' + view);
           setIsSidebarOpen(false);
         }} 
         onChangePasswordClick={() => {
@@ -679,7 +656,21 @@ const AppContent: React.FC = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto focus:outline-none">
-          {renderView()}
+          <Routes>
+            <Route path="/" element={renderView()} />
+            <Route path="/dashboard" element={renderView()} />
+            <Route path="/fleet" element={renderView()} />
+            <Route path="/request" element={renderView()} />
+            <Route path="/history" element={renderView()} />
+            <Route path="/pending" element={renderView()} />
+            <Route path="/completed" element={renderView()} />
+            <Route path="/workshops" element={renderView()} />
+            <Route path="/admin" element={renderView()} />
+            <Route path="/oilLog" element={renderView()} />
+            <Route path="/locations" element={renderView()} />
+            <Route path="/transfers" element={renderView()} />
+            <Route path="/outsourcedLog" element={renderView()} />
+          </Routes>
         </main>
       </div>
       {foundRequest && (
