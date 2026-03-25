@@ -1,0 +1,147 @@
+import React from 'react';
+import { useTranslation } from '../hooks/useTranslation';
+import { useData } from '../context/DataContext';
+import { ArrowsRightLeftIcon, DocumentTextIcon } from './Icons';
+
+interface TransferHistoryProps {
+  selectedEquipmentId?: string;
+}
+
+export const TransferHistory: React.FC<TransferHistoryProps> = ({ selectedEquipmentId }) => {
+  const { t } = useTranslation();
+  const { transferRequests, equipments } = useData();
+
+  const completedTransfers = transferRequests.filter(req => {
+    const isCompleted = req.status.toLowerCase() === 'accepted' || req.status.toLowerCase() === 'rejected';
+    if (!isCompleted) return false;
+    if (selectedEquipmentId && req.equipmentId !== selectedEquipmentId) return false;
+    return true;
+  }).sort((a, b) => new Date(b.dateAccepted || b.approvalDate || '').getTime() - new Date(a.dateAccepted || a.approvalDate || '').getTime());
+
+  return (
+    <div className="overflow-x-auto">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {completedTransfers.length === 0 ? (
+          <div className="text-center py-10 text-gray-500 bg-white rounded-lg border border-gray-200">
+            {t('noTransferHistoryFound')}
+          </div>
+        ) : (
+          completedTransfers.map((req) => {
+            const equipment = equipments.find(e => e.id === req.equipmentId);
+            return (
+              <div key={req.id} className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-bold text-gray-900">
+                    {equipment?.equipmentNumber || req.equipmentId}
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    req.status.toLowerCase() === 'accepted' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {t(req.status.toLowerCase())}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600 mb-2">
+                  <div className="flex items-center">
+                    <span>{req.fromLocation}</span>
+                    <ArrowsRightLeftIcon className="h-3 w-3 mx-2 text-gray-400" />
+                    <span className="text-green-600">{req.toLocation}</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 mb-2 truncate">
+                  {req.reason}
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                  <div>
+                    <span className="font-medium">{t('requester')}:</span> {req.requesterName}
+                  </div>
+                  <div>
+                    <span className="font-medium">{t('approver')}:</span> {req.approver || req.acceptedBy || req.approvedBy || '-'}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <table className="hidden md:table min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('equipment')}</th>
+            <th className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('transferDetails')}</th>
+            <th className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('requester')}</th>
+            <th className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('approver')}</th>
+            <th className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('status')}</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {completedTransfers.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                {t('noTransferHistoryFound')}
+              </td>
+            </tr>
+          ) : (
+            completedTransfers.map((req) => {
+              const equipment = equipments.find(e => e.id === req.equipmentId);
+              return (
+                <tr key={req.id} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <DocumentTextIcon className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="ms-4">
+                        <div className="text-sm font-bold text-gray-900">
+                          {equipment?.equipmentNumber || req.equipmentId}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {equipment?.serialNumber}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center text-sm text-gray-900">
+                      <span>{req.fromLocation}</span>
+                      <ArrowsRightLeftIcon className="h-3 w-3 mx-2 text-gray-400" />
+                      <span className="text-green-600">{req.toLocation}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">
+                      {req.reason}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{req.requesterName}</div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(req.dateRequested || req.requestDate).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{req.approver || req.acceptedBy || req.approvedBy || '-'}</div>
+                    <div className="text-xs text-gray-500">
+                      {req.dateAccepted ? new Date(req.dateAccepted).toLocaleDateString() : (req.approvalDate ? new Date(req.approvalDate).toLocaleDateString() : '-')}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      req.status.toLowerCase() === 'accepted' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {t(req.status.toLowerCase())}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
