@@ -1,12 +1,27 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { DataProvider } from './context/DataContext';
 import './src/index.css';
+
+const router = createBrowserRouter([
+  {
+    path: "*",
+    element: (
+      <LanguageProvider>
+        <DataProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </DataProvider>
+      </LanguageProvider>
+    ),
+  },
+]);
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -16,14 +31,6 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <LanguageProvider>
-        <DataProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </DataProvider>
-      </LanguageProvider>
-    </BrowserRouter>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );

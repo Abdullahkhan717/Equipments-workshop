@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, useBlocker } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { EquipmentList } from './components/FleetList';
 import { RepairRequestView } from './components/RepairRequestView';
@@ -49,34 +49,26 @@ const AppContent: React.FC = () => {
   const [foundRequest, setFoundRequest] = useState<RepairRequest | null>(null);
   const [showToast, setShowToast] = useState(false);
 
-  const locationRef = useRef(location);
-  useEffect(() => {
-    locationRef.current = location;
-  }, [location]);
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      (currentLocation.pathname === '/' || currentLocation.pathname === '/dashboard') &&
+      nextLocation.pathname !== currentLocation.pathname
+  );
 
   useEffect(() => {
-    // Handle back button logic for exit confirmation
-    const handlePopState = (event: PopStateEvent) => {
-      if (locationRef.current.pathname === '/' || locationRef.current.pathname === '/dashboard') {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        const confirmExit = window.confirm("Do you want to exit the app?");
-        if (confirmExit) {
-          if ((window as any).navigator && (window as any).navigator.app) {
-            (window as any).navigator.app.exitApp();
-          } else {
-            window.close();
-          }
+    if (blocker.state === 'blocked') {
+      const confirmExit = window.confirm("Do you want to exit the app?");
+      if (confirmExit) {
+        if ((window as any).navigator && (window as any).navigator.app) {
+          (window as any).navigator.app.exitApp();
         } else {
-          // Push the dashboard state back so the user doesn't leave
-          window.history.pushState(null, '', '/dashboard');
+          window.close();
         }
+      } else {
+        blocker.reset();
       }
-    };
-
-    window.addEventListener('popstate', handlePopState, true);
-    return () => window.removeEventListener('popstate', handlePopState, true);
-  }, []);
+    }
+  }, [blocker]);
 
   useEffect(() => {
     // Sync activeView with location
