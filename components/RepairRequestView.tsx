@@ -36,7 +36,7 @@ export const RepairRequestView: React.FC<RepairRequestViewProps> = ({ equipments
   const [fromLocation, setFromLocation] = useState(currentUser?.location || '');
   const [toLocation, setToLocation] = useState(currentUser?.location || '');
   const [selectedWorkshopId, setSelectedWorkshopId] = useState('');
-  const [faults, setFaults] = useState<Fault[]>([{ id: crypto.randomUUID(), description: '', workshopId: '', mechanicName: '' }]);
+  const [faults, setFaults] = useState<Fault[]>([{ id: crypto.randomUUID(), description: '', workshopId: '', mechanicName: '', partsUsed: [] }]);
   
   const [selectedOils, setSelectedOils] = useState<string[]>([]);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
@@ -57,7 +57,7 @@ export const RepairRequestView: React.FC<RepairRequestViewProps> = ({ equipments
   
   const handleAddFault = () => {
     if (faults.length < 10) {
-      setFaults([...faults, { id: crypto.randomUUID(), description: '', workshopId: '', mechanicName: '' }]);
+      setFaults([...faults, { id: crypto.randomUUID(), description: '', workshopId: '', mechanicName: '', partsUsed: [] }]);
     }
   };
 
@@ -67,7 +67,7 @@ export const RepairRequestView: React.FC<RepairRequestViewProps> = ({ equipments
     }
   };
 
-  const handleFaultFieldChange = (id: string, field: 'description' | 'workshopId' | 'mechanicName', value: string) => {
+  const handleFaultFieldChange = (id: string, field: 'description' | 'workshopId' | 'mechanicName' | 'workDone', value: string) => {
     if (field === 'workshopId' && value === 'addNew') {
         setShowWorkshopModal(true);
         return;
@@ -88,6 +88,47 @@ export const RepairRequestView: React.FC<RepairRequestViewProps> = ({ equipments
                 }
             }
             return updatedFault;
+        }
+        return fault;
+    }));
+  };
+
+  const handleAddPart = (faultId: string) => {
+    setFaults(faults.map(fault => {
+        if (fault.id === faultId) {
+            return {
+                ...fault,
+                partsUsed: [...(fault.partsUsed || []), { id: crypto.randomUUID(), name: '', quantity: '1' }]
+            };
+        }
+        return fault;
+    }));
+  };
+
+  const handleRemovePart = (faultId: string, partId: string) => {
+    setFaults(faults.map(fault => {
+        if (fault.id === faultId) {
+            return {
+                ...fault,
+                partsUsed: (fault.partsUsed || []).filter(part => part.id !== partId)
+            };
+        }
+        return fault;
+    }));
+  };
+
+  const handlePartChange = (faultId: string, partId: string, field: 'name' | 'quantity', value: string) => {
+    setFaults(faults.map(fault => {
+        if (fault.id === faultId) {
+            return {
+                ...fault,
+                partsUsed: (fault.partsUsed || []).map(part => {
+                    if (part.id === partId) {
+                        return { ...part, [field]: value };
+                    }
+                    return part;
+                })
+            };
         }
         return fault;
     }));
@@ -684,6 +725,21 @@ export const RepairRequestView: React.FC<RepairRequestViewProps> = ({ equipments
                                             onChange={(e) => handleFaultFieldChange(fault.id, 'mechanicName', e.target.value)}
                                             className="w-full p-2 border border-gray-300 rounded-md text-sm"
                                         />
+                                    </div>
+                                    <div className="sm:col-span-2 mt-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="block text-xs font-bold text-gray-500 uppercase">{t('partsUsed')}</label>
+                                            <button type="button" onClick={() => handleAddPart(fault.id)} className="text-xs text-green-600 font-bold hover:underline">+ {t('addPart')}</button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {(fault.partsUsed || []).map(part => (
+                                                <div key={part.id} className="flex gap-2">
+                                                    <input type="text" placeholder={t('partName')} value={part.name} onChange={(e) => handlePartChange(fault.id, part.id, 'name', e.target.value)} className="flex-1 p-2 border border-gray-300 rounded-md text-sm" />
+                                                    <input type="number" placeholder={t('quantity')} value={part.quantity} onChange={(e) => handlePartChange(fault.id, part.id, 'quantity', e.target.value)} className="w-20 p-2 border border-gray-300 rounded-md text-sm" />
+                                                    <button type="button" onClick={() => handleRemovePart(fault.id, part.id)} className="text-red-500 p-2"><TrashIcon className="h-4 w-4" /></button>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
