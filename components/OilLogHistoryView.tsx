@@ -1,4 +1,5 @@
 import React from 'react';
+import * as XLSX from 'xlsx';
 import { useData } from '../context/DataContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { formatDate, formatTime } from '../utils/formatters';
@@ -16,10 +17,34 @@ export const OilLogHistoryView: React.FC<OilLogHistoryViewProps> = ({ selectedEq
     return true;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredLogs.map(log => {
+      const equipment = equipments.find(e => e.id === log.equipmentId);
+      return {
+        Equipment: equipment ? `${equipment.equipmentNumber} (${equipment.serialNumber})` : 'Unknown',
+        Date: formatDate(log.date),
+        Time: formatTime(log.time),
+        Driver: log.driverName,
+        Mileage: log.mileage,
+        OilTypes: (Array.isArray(log.oilTypes) ? log.oilTypes : []).join(', '),
+        Filters: (Array.isArray(log.filters) ? log.filters : []).join(', ')
+      };
+    }));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'OilLogHistory');
+    XLSX.writeFile(workbook, 'OilLogHistory.xlsx');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-800">{t('oilLogHistory')}</h2>
+        <button 
+          onClick={downloadExcel}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+        >
+          {t('downloadExcel') || 'Download Excel'}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

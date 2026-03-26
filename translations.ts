@@ -228,6 +228,15 @@ export const translations: { [lang: string]: { [key: string]: string } } = {
     noHistoryForEquipment: 'No history for this equipment.',
     noRepairHistoryFound: 'No repair history found.',
     unknownEquipment: 'Unknown Equipment',
+    tyreHistory: 'Tyre History',
+    allConditions: 'All Conditions',
+    allTypes: 'All Types',
+    oilChangeAlert: 'Change Oil Alert',
+    tyreType: 'Tyre Type',
+    tyreType_radial: 'Radial',
+    tyreType_bias: 'Bias',
+    tyreType_solid: 'Solid',
+    tyreType_pneumatic: 'Pneumatic',
 
     // Pending/Completed Lists
     jobCardNo: 'Job Card #',
@@ -879,5 +888,14 @@ export const translations: { [lang: string]: { [key: string]: string } } = {
     receivedRepairRequest: 'طلب إصلاح مستلم',
     accepted: 'مقبول',
     allLocations: 'جميع المواقع',
+    tyreHistory: 'سجل الإطارات',
+    allConditions: 'كل الحالات',
+    allTypes: 'كل الأنواع',
+    oilChangeAlert: 'تنبيه تغيير الزيت',
+    tyreType: 'نوع الإطار',
+    tyreType_radial: 'شعاعي',
+    tyreType_bias: 'متحيز',
+    tyreType_solid: 'صلب',
+    tyreType_pneumatic: 'هوائي',
   }
 };

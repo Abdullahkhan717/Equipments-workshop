@@ -111,6 +111,7 @@ export const EquipmentList: React.FC<EquipmentListProps> = ({
 
   const filteredEquipments = equipments.filter(eq => {
     // Location filter
+    console.log('Filtering:', eq.equipmentNumber, 'branch:', eq.branchLocation, 'filter:', locationFilter);
     if (locationFilter && eq.branchLocation !== locationFilter) return false;
 
     const query = String(searchQuery || '').toLowerCase();
