@@ -14,7 +14,7 @@ import { JobCard } from './components/JobCard';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 
 import { useLanguage } from './context/LanguageContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
 import { useTranslation } from './hooks/useTranslation';
 import { LoginScreen } from './components/LoginScreen';

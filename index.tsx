@@ -11,15 +11,7 @@ import './src/index.css';
 const router = createBrowserRouter([
   {
     path: "*",
-    element: (
-      <LanguageProvider>
-        <DataProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </DataProvider>
-      </LanguageProvider>
-    ),
+    element: <App />,
   },
 ]);
 
@@ -31,6 +23,12 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <LanguageProvider>
+      <DataProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </DataProvider>
+    </LanguageProvider>
   </React.StrictMode>
 );
