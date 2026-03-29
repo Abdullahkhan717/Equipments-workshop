@@ -3,6 +3,7 @@ import type { Equipment, RepairRequest, OilLog } from '../types';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAuth } from '../context/AuthContext';
 import { WhatsappIcon } from './Icons';
+import { formatDate } from '../utils/formatters';
 
 interface EquipmentDetailsViewProps {
   equipment: Equipment;
@@ -124,7 +125,7 @@ export const EquipmentDetailsView: React.FC<EquipmentDetailsViewProps> = ({
                       {t(request.status.toLowerCase() as any)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1"><strong>{t('dateIn')}:</strong> {request.dateIn}</p>
+                  <p className="text-sm text-gray-600 mb-1"><strong>{t('dateIn')}:</strong> {formatDate(request.dateIn)}</p>
                   <p className="text-sm text-gray-600 mb-1"><strong>{t('purpose')}:</strong> {t(request.purpose.toLowerCase().replace(/ /g, '') as any)}</p>
                   <div className="mt-2">
                     <p className="text-xs font-bold text-gray-500 uppercase mb-1">{t('faults')}:</p>
@@ -151,7 +152,7 @@ export const EquipmentDetailsView: React.FC<EquipmentDetailsViewProps> = ({
               .map(log => (
                 <div key={log.id} className="bg-white p-4 rounded-lg border border-green-100 shadow-sm">
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-sm font-bold text-green-600">{log.date}</span>
+                    <span className="text-sm font-bold text-green-600">{formatDate(log.date)}</span>
                     <span className="text-xs text-gray-500">{log.time}</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-1"><strong>{t('driver')}:</strong> {log.driverName}</p>
