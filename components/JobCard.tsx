@@ -150,7 +150,6 @@ export const JobCard: React.FC<JobCardProps> = ({ request, equipment, workshops,
   }, [onShare]);
 
   const toLocationData = allLocations.find(l => l.name === request.toLocation);
-  const primaryForeman = toLocationData?.workshopManager || 'Waseem khan';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-0 md:p-4">
@@ -374,9 +373,9 @@ export const JobCard: React.FC<JobCardProps> = ({ request, equipment, workshops,
                 </div>
               </div>
               <div className="text-center">
-                <p className="font-bold text-sm mb-1">{primaryForeman}</p>
+                <p className="font-bold text-sm mb-1 h-5"></p>
                 <div className="border-t border-black pt-2">
-                  <p className="text-[10px] font-bold uppercase">{t('foremanSignature')}</p>
+                  <p className="text-[10px] font-bold uppercase">{t('foremanName')}</p>
                 </div>
               </div>
               <div className="text-center">
